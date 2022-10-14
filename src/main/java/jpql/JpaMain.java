@@ -19,11 +19,15 @@ public class JpaMain {
             member.setAge(10);
             em.persist(member);
 
-            Member result = em.createQuery("select m from Member m where m.username = :username", Member.class) // 파라미터 바인딩 - 이름 기준
-                .setParameter("username", "member1")
-                .getSingleResult();
+            em.flush();
+            em.clear();
 
-            System.out.println("singleResult = " + result.getUsername());
+            List<MemberDTO> result = em.createQuery("select new jpql.MemberDTO(m.username, m.age) from Member m", MemberDTO.class)
+                    .getResultList();
+
+            MemberDTO memberDTO = result.get(0);
+            System.out.println("memberDTO.getUsername() = " + memberDTO.getUsername());
+            System.out.println("memberDTO.getAge() = " + memberDTO.getAge());
 
 
             tx.commit();
@@ -39,24 +43,14 @@ public class JpaMain {
 }
 
 /**
- * JPQL 문법
- * select m from Member as m where m.age > 18
- * 엔티티와 속성은 대소문자 구분 O (Member, age)
- * JPQL 키워드는 대소문자 구분 X (SELECT, FROM, where)
- * 엔티티 이름 사용, 테이블 이름이 아님(Member)
- * 별칭은 필수(m) (as는 생략가능)
- * 웬만한 ANSI 구문 사용가능
- *
- * TypeQuery, Query
- *   * TypeQuery: 반환 타입이 명확할 때 사용
- *   * Query: 반환 타입이 명확하지 않을 때 사용
- *
- * 결과 조회 API
- * query.getResultList(): 결과가 하나 이상일 때, 리스트 반환
- *   * 결과가 없으면 빈 리스트 반환
- * query.getSingleResult(): 결과가 정확히 하나, 단일 객체 반환
- *   * 결과가 없으면: javax.persistence.NoResultException
- *   * 둘 이상이면: javax.persistence.NonUniqueResultException
+ * 프로젝션
+ *   * SELECT 절에 조회할 대상을 지정하는 것
+ *   * 프로젝션 대상: 엔티티, 임베디드 타입, 스칼라 타입(숫자, 문자등 기본 데이터 타입)
+ *   * SELECT m.FROM Member m -> 엔티티 프로젝션
+ *   * SELECT m.team FROM Member m -> 엔티티 프로젝션
+ *   * SELECT m.address FROM Member m -> 임베디드 타입 프로젝션
+ *   * SELECT m.username, m.age FROM Member m -> 스칼라 타입 프로젝션
+ *   * DISTINCT로 중복 제거
  */
 
 
