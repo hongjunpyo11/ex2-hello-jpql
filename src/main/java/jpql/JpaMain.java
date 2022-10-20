@@ -41,18 +41,13 @@ public class JpaMain {
             em.flush();
             em.clear();
 
-            String query = "select m From Member m join fetch m.team";
+            String query = "select t From Team t join fetch t.members";
 
-            List<Member> result = em.createQuery(query, Member.class)
+            List<Team> result = em.createQuery(query, Team.class)
                     .getResultList();
 
-            for (Member member : result) {
-                System.out.println("member = " + member.getUsername() + ", " + member.getTeam().getName());
-                //회원1, 팀A(SQL)
-                //회원2, 팀A(1차캐시)
-                //회원3, 티뮤
-
-                //회원 100명 -> 쿼리가 100번 N + 1 문제
+            for (Team team : result) {
+                System.out.println("team = " + team.getName() + ", " + team.getMembers().size());
             }
 
 
@@ -83,6 +78,20 @@ public class JpaMain {
  *   * [SQL]
  *     SELECT M.*, T.* FROM MEMBER M
  *     INNER JOIN TEAM T ON M.TEAM_ID = T.ID
+ *
+ * 컬렉션 페치 조인
+ *   * 일대다 관계, 컬렉션 페치 조인
+ *
+ *   * [JPQL]
+ *     select t
+ *     from Team t join fetch t.members
+ *     where t.name = '팀A'
+ *
+ *   * [SQL]
+ *     SELECT T.*, M.*
+ *     FROM TEAM T
+ *     INNER JOIN MEMBER M ON T.ID = M.TEAM_ID
+ *     WHERE T.NAME = '팀A'
  */
 
 
