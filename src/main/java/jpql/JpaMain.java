@@ -14,29 +14,47 @@ public class JpaMain {
 
         try {
 
-            Team team = new Team();
-            em.persist(team);
+            Team teamA = new Team();
+            teamA.setName("팀A");
+            em.persist(teamA);
+
+            Team teamB = new Team();
+            teamA.setName("팀B");
+            em.persist(teamB);
 
             Member member1 = new Member();
-            member1.setUsername("관리자1");
-            member1.setTeam(team);
+            member1.setUsername("회원1");
+            member1.setTeam(teamA);
             em.persist(member1);
 
             Member member2 = new Member();
-            member2.setUsername("관리자2");
-            member2.setTeam(team);
+            member2.setUsername("회원2");
+            member2.setTeam(teamA);
             em.persist(member2);
+
+            Member member3 = new Member();
+            member3.setUsername("회원3");
+            member3.setTeam(teamB);
+            em.persist(member3);
 
 
             em.flush();
             em.clear();
 
-            String query = "select m.username From Team t join t.members m"; // 이 방법이 실무에서 추천됨 명시적 조인을 해야함
+            String query = "select m From Member m";
 
-            Integer result = em.createQuery(query, Integer.class)
-                    .getSingleResult();
+            List<Member> result = em.createQuery(query, Member.class)
+                    .getResultList();
 
-            System.out.println("result = " + result);
+            for (Member member : result) {
+                System.out.println("member = " + member.getUsername() + ", " + member.getTeam().getName());
+                //회원1, 팀A(SQL)
+                //회원2, 팀A(1차캐시)
+                //회원3, 티뮤
+
+                //회원 100명 -> 쿼리가 100번 N + 1 문제
+            }
+
 
             tx.commit();
         } catch (Exception e) {
@@ -50,26 +68,21 @@ public class JpaMain {
     }
 }
 /**
- * 경로 표현식
- *   * .을 찍어서 객체 그래프를 탐색하는 것
+ * 페치 조인(fetch join)
+ *   * SQL 조인 종류 X
+ *   * JPQL에서 성능 최적화를 위해 제공하는 기능
+ *   * 연관된 엔티티나 컬렉션을 SQL 한 번에 함께 조회하는 기능
+ *   * join fetch 명령어 사용
+ *   * 페치 조인 ::= [LEFT [OUTER] | INNER] JOIN FETCH 조인경로
  *
- * 경로 표현식 용어 정리
- *   * 상태필드(state field): 단순히 값을 저장하기 위한 필드
- *                          (ex: m.username)
- *   * 연관 필드(association field): 연관관계를 위한 필드
- *     * 단일 값 연관 필드:
- *     @ManyToOne, @OneToOne, 대상이 엔티티 (ex: m.team)
- *     * 컬렉션 값 연관 필드:
- *     @OneToMany, @ManyToMany, 대상이 컬렉션(ex: m.orders)
- *
- * 경로 표현식 특징
- *   * 상태필드(state field): 경로 탐색의 끝, 탐색 X
- *   * 단일 값 연관 필드:묵시적 내부 조인(inner join) 발생, 탐색 O
- *   * 컬렉션 값 연관 필드: 묵시적 내부 조인 발생, 탐색 X
- *     * FROM 절에서 명시적 조인을 통해 별칭을 얻으면 별칭을 통해 탐색 가능
- *
- *       * 묵시적 조인: 경로 표현식에 의해 묵시적으로 SQL 조인 발생(내부 조인만 가능)
- *         * select m.team from Member m
+ * 엔티티 페치 조인
+ *   * 회원을 조회하면서 연관된 팀도 함께 조회(SQL 한 번에)
+ *   * SQL을 보면 회원 뿐만 아니라 팀(T.*)도 함께 SELECT
+ *   * [JPQL]
+ *     select m from Member m join fetch m.team
+ *   * [SQL]
+ *     SELECT M.*, T.* FROM MEMBER M
+ *     INNER JOIN TEAM T ON M.TEAM_ID = T.ID
  */
 
 
