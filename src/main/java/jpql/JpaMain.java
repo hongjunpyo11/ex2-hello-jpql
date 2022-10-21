@@ -46,8 +46,13 @@ public class JpaMain {
             List<Team> result = em.createQuery(query, Team.class)
                     .getResultList();
 
+            System.out.println("result = " + result.size());
+
             for (Team team : result) {
-                System.out.println("team = " + team.getName() + ", " + team.getMembers().size());
+                System.out.println("team = " + team.getName() + "|members=" + team.getMembers());
+                for (Team team1 : result) {
+
+                }
             }
 
 
@@ -92,6 +97,20 @@ public class JpaMain {
  *     FROM TEAM T
  *     INNER JOIN MEMBER M ON T.ID = M.TEAM_ID
  *     WHERE T.NAME = '팀A'
+ *
+ * 페치 조인과 DISTINCT
+ *   * SQL의 DISTINCT는 중복된 결과를 제거하는 명령
+ *   * JPQL의 DISTINCT 2가지 기능 제공
+ *     * 1. SQL에 DISTINCT를 추가
+ *     * 2. 애플리케이션에서 엔티티 중복 제거
+ *
+ * 페치 조인과 일반 조인의 차이
+ *   * 일반 조인 실행시 엔티티를 함께 조회하지 않음
+ *   * JPQL은 결과를 반환할 때 연관관계 고려X
+ *   * 단지 SELECT 절에 지정한 엔티티만 조회할 뿐
+ *   * 여기서는 팀 엔티티만 조회하고, 회원 엔티티는 조회X
+ *   * 페치 조인을 사용할 때만 연관된 엔티티도 함께 조회(즉시 로딩)
+ *   * 페치 조인은 객체 그래프를 SQL 한번에 조회하는 개념
  */
 
 
