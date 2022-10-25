@@ -41,17 +41,13 @@ public class JpaMain {
             em.flush();
             em.clear();
 
-            String query = "select m from Member m where m.team = :team";
-
-            List<Member> members = em.createQuery(query, Member.class)
-                    .setParameter("team", teamA)
+            List<Member> resultList = em.createNamedQuery("Member.findByUsername", Member.class)
+                    .setParameter("username", "회원1")
                     .getResultList();
 
-            for (Member member : members) {
+            for (Member member : resultList) {
                 System.out.println("member = " + member);
             }
-
-
             tx.commit();
         } catch (Exception e) {
             tx.rollback();
@@ -65,13 +61,24 @@ public class JpaMain {
 }
 
 /**
- * 엔티티 직접 사용 - 기본 키 값
- *   * JPQL에서 엔티티를 직접 사용하면 SQL에서 해당 엔티티의 기본 키 값을 사용
+ * Named 쿼리 - 어노테이션 너무 지져분해져서 좀 안좋다고 봄
+ * @Entity
+ * @NamedQurey(
+ *        name = "Member.findByUsername",
+ *        query = "select m from Member m where m.username = :username")
+ * public class Member {
+ *     ...
+ * }
  *
- *   * [JPQL]
- *     select count(m.id) from Member m // 엔티티 아이디를 사용
- *     select count(m) from Member m // 엔티티를 직접 사용
+ * List<Member> resultList =
+ *   em.createNamedQuery("Member.findByUsername", Member.class)
+ *          .setParameter("username", "회원1")
+ *          .getResultList();
  *
- *   * [SQL](JPQL 둘다 같은 다음 SQL 실행)
- *     select count(m.id) as cnt from Member m
+ * Named 쿼리 - 정적 쿼리
+ *   * 미리 정의해서 이름을 부여해두고 사용하는 JQPL
+ *   * 정적 쿼리
+ *   * 어노테이션, XML에 정의
+ *   * 애플리케이션 로딩 시점에 초기화 후 재사용
+ *   * 애플리케이션 로딩 시점에 쿼리를 검증
  */
