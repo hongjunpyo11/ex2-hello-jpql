@@ -41,20 +41,14 @@ public class JpaMain {
             em.flush();
             em.clear();
 
-            String query = "select t From Team t";
+            String query = "select m from Member m where m.team = :team";
 
-            List<Team> result = em.createQuery(query, Team.class)
-                    .setFirstResult(0)
-                    .setMaxResults(2)
+            List<Member> members = em.createQuery(query, Member.class)
+                    .setParameter("team", teamA)
                     .getResultList();
 
-            System.out.println("result = " + result.size());
-
-            for (Team team : result) {
-                System.out.println("team = " + team.getName() + "|members=" + team.getMembers().size());
-                for (Member member : team.getMembers()) {
-                    System.out.println("-> member = " + member);
-                }
+            for (Member member : members) {
+                System.out.println("member = " + member);
             }
 
 
@@ -71,11 +65,13 @@ public class JpaMain {
 }
 
 /**
- * 다형성 쿼리
- *   * 조회 대상을 특정 자식으로 한정
+ * 엔티티 직접 사용 - 기본 키 값
+ *   * JPQL에서 엔티티를 직접 사용하면 SQL에서 해당 엔티티의 기본 키 값을 사용
  *
- *   * TREAT(JPA 2.1)
- *     * 자바의 타입 캐스팅과 유사
- *     * 상속 구조에서 부모 타입을 특정 자식 타입으로 다룰 때 사용
- *     * FROM, WHERE, SELECT(하이버네이트 지원) 사용용
+ *   * [JPQL]
+ *     select count(m.id) from Member m // 엔티티 아이디를 사용
+ *     select count(m) from Member m // 엔티티를 직접 사용
+ *
+ *   * [SQL](JPQL 둘다 같은 다음 SQL 실행)
+ *     select count(m.id) as cnt from Member m
  */
